@@ -7,7 +7,7 @@ const STATIC_DIR = path.resolve(__dirname,
 const SOURCE_DIR = path.resolve(STATIC_DIR, 'src');
 
 module.exports = {
-  mode: "production",
+  mode: "development",
   devtool: 'source-map',
   entry: {
     plugin: path.resolve(SOURCE_DIR, 'index.js')
@@ -27,7 +27,7 @@ module.exports = {
         }
       }
     },
-    minimize: true
+    minimize: false
   },
   module: {
     rules: [
