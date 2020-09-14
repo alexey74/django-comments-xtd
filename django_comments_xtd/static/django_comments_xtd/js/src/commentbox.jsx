@@ -160,34 +160,38 @@ export class CommentBox extends React.Component {
   }
 
   load_comments() {
-    $.ajax({
-      url: this.props.list_url,
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        // Set here a cookie with the last time comments have been retrieved.
-        // I'll use it to add a label 'new' to every new comment received
-        // after the timestamp stored in the cookie.
-        this.create_tree(data);
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.list_url, status, err.toString());
-      }.bind(this)
-    });
+    if (this.props.list_url) {
+        $.ajax({
+          url: this.props.list_url,
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            // Set here a cookie with the last time comments have been retrieved.
+            // I'll use it to add a label 'new' to every new comment received
+            // after the timestamp stored in the cookie.
+            this.create_tree(data);
+          }.bind(this),
+          error: function(xhr, status, err) {
+            console.error(this.props.list_url, status, err.toString());
+          }.bind(this)
+        });
+    }
   }
 
   load_count() {
-    $.ajax({
-      url: this.props.count_url,
-      dataType: 'json',
-      cache: false,
-      success: function(data) {
-        this.setState({counter: data.count});
-      }.bind(this),
-      error: function(xhr, status, err) {
-        console.error(this.props.count_url, status, err.toString());
-      }.bind(this)
-    });
+    if (this.props.count_url) {
+        $.ajax({
+          url: this.props.count_url,
+          dataType: 'json',
+          cache: false,
+          success: function(data) {
+            this.setState({counter: data.count});
+          }.bind(this),
+          error: function(xhr, status, err) {
+            console.error(this.props.count_url, status, err.toString());
+          }.bind(this)
+        });
+    }
   }
   
   componentDidMount() {
