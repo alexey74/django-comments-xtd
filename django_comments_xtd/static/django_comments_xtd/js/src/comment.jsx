@@ -55,6 +55,7 @@ export class Comment extends React.Component {
     this.action_like = this.action_like.bind(this);
     this.action_dislike = this.action_dislike.bind(this);
     this.handle_reply_click = this.handle_reply_click.bind(this);
+    this.action_remove = this.action_remove.bind(this);
   }
 
   _get_username_chunk() {
@@ -121,13 +122,17 @@ export class Comment extends React.Component {
           );
         }
       }
+      
+    let current_user_id = this.state.current_user.split(":")[0];
 
     if(this.props.settings.is_authenticated &&
-       this.props.settings.can_moderate)
+       (this.props.settings.can_moderate ||
+       (current_user_id == this.props.data.user_id)))
       {
         let remove_msg = django.gettext("remove comment");
-        url = this.props.settings.delete_url.replace('0', this.props.data.id);
-        moderate_html = (<a className="mutedlink" href={url}>
+        
+        moderate_html = (<a className="mutedlink" href="#"
+            onClick={this.action_remove}>
           <i className="fas fa-trash-alt" title={remove_msg}></i>
         </a>);
       }
@@ -330,6 +335,43 @@ export class Comment extends React.Component {
         this.props.settings.login_url + "?next=" +
         this.props.settings.dislike_url.replace('0', this.props.data.id)
       );
+  }
+  
+  _post_remove() {
+    let url = this.props.settings.delete_url.replace('0', this.props.data.id);
+    $.ajax({
+      method: 'PUT',
+      url: url,
+      data: {is_removed: true},
+      dataType: 'json',
+      cache: false,
+      statusCode: {
+        200: function() {
+            console.log('comment removed', this.props.data.id);
+            this.props.on_comment_created();
+        }.bind(this)
+      },
+      error: function(xhr, status, err) {
+        if(xhr.status==400 && xhr.responseJSON.non_field_errors.length)
+          alert(xhr.responseJSON.non_field_errors[0]);
+        else
+          console.error('failed to delete comment:', 
+                        this.props.settings.delete_url, status,
+                        err.toString());
+      }.bind(this)
+    });
+  }
+  
+  action_remove(event) {
+    event.preventDefault();
+    if(this.props.settings.is_authenticated)
+      return this._post_remove();
+    else
+      return window.location.href = (
+        this.props.settings.login_url + "?next=" +
+        this.props.settings.dislike_url.replace('0', this.props.data.id)
+      );    
+    
   }
 
   is_hover(elem) {
